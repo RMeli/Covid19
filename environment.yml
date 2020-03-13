@@ -1,0 +1,23 @@
+name: covid19
+channels:
+  - conda-forge
+dependencies:
+  # Python
+  - python=3.7
+  - ipython
+  - pip
+
+  # Science
+  - numpy
+  - scipy
+  - pandas
+  - xlrd # excel
+  - scikit-learn
+
+  # Visualisation
+  - matplotlib
+  - seaborn
+
+  # Devtools
+  - black
+  - flake8
