@@ -81,7 +81,11 @@ def solve_SIR(I0, tf, R0, m):
     y0 = np.array([S0, I0, 0, 0])
 
     sir = integrate.solve_ivp(
-        lambda t, y: SIR_mortality(t, y, R0, m if m is not None else 0.0), (0, tf), y0, rtol=1e-12, atol=1e-12
+        lambda t, y: SIR_mortality(t, y, R0, m if m is not None else 0.0),
+        (0, tf),
+        y0,
+        rtol=1e-12,
+        atol=1e-12,
     )
 
     # Check conservation of people
