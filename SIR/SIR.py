@@ -20,7 +20,7 @@ from matplotlib import pyplot as plt
 N = 67545757
 
 
-def SIR_mortality(t, y, R0, m, beta=1):
+def SIR(t, y, R0, gamma, m):
     """
     SIR ODEs
 
@@ -48,7 +48,7 @@ def SIR_mortality(t, y, R0, m, beta=1):
     S, I = y[0], y[1]
 
     # Gamma and beta are related by R0
-    gamma = beta / R0
+    beta = gamma * R0
 
     dSdt = -beta * I * S
     dIdt = beta * I * S - gamma * I
@@ -58,7 +58,7 @@ def SIR_mortality(t, y, R0, m, beta=1):
     return np.array([dSdt, dIdt, dRdt, dDdt])
 
 
-def solve_SIR(I0, tf, R0, m):
+def solve_SIR(I0, tint, R0, gamma, m):
     """
     Solve system of SIR ODEs
 
@@ -66,8 +66,8 @@ def solve_SIR(I0, tf, R0, m):
     ----------
     I0: int
         Initial number of infected people
-    tf: float
-        Final integration time
+    tint: Tuple[double]
+        Time interval
     R0: double
         Basic reproductive ratio
     m: double
@@ -81,8 +81,8 @@ def solve_SIR(I0, tf, R0, m):
     y0 = np.array([S0, I0, 0, 0])
 
     sir = integrate.solve_ivp(
-        lambda t, y: SIR_mortality(t, y, R0, m if m is not None else 0.0),
-        (0, tf),
+        lambda t, y: SIR(t, y, R0, gamma, m if m is not None else 0.0),
+        tint,
         y0,
         rtol=1e-12,
         atol=1e-12,
@@ -94,7 +94,7 @@ def solve_SIR(I0, tf, R0, m):
     return sir
 
 
-def plot_sir(I0, tf, R0, m=None):
+def plot_sir(I0, tint, R0, gamma, m=None, tag=None):
     """
     Plot SIR model
 
@@ -102,17 +102,19 @@ def plot_sir(I0, tf, R0, m=None):
     ----------
     I0: int
         Initial number of infected people
-    tf: float
-        Final integration time
+    tint: Tuple[double]
+        Time interval
     R0: double
         Basic reproductive ratio
     m: double (optional)
         Mortality rate
+    tag: str
+        Plot tag
     """
 
-    sir = solve_SIR(I0, tf, R0, m)
+    sir = solve_SIR(I0, tint, R0, gamma, m)
 
-    plt.figure()
+    fig = plt.figure()
 
     plt.plot(sir.t, sir.y[0], label="Susceptible")
     plt.plot(sir.t, sir.y[1], label="Infected")
@@ -126,11 +128,13 @@ def plot_sir(I0, tf, R0, m=None):
     plt.xlabel("Time")
     plt.ylabel("Fraction of Population")
 
-    tag = "simple" if m is None else "mortality"
+    if tag is None:
+        tag = "simple" if m is None else "mortality"
     plt.savefig(f"plots/SIR_{tag}.pdf")
+    plt.close(fig)
 
 
-def plot_infected(I0, tf, R0, m=None):
+def plot_infected(I0, tint, R0, gamma, m=None):
     """
     Plot fraction of infected people (SIR model) for different values of R0
 
@@ -138,18 +142,18 @@ def plot_infected(I0, tf, R0, m=None):
     ----------
     I0: int
         Initial number of infected people
-    tf: float
-        Final integration time
+    tint: Tuple[double]
+        Time interval
     R0: List[double]
         Basic reproductive ratio
     m: double
         Mortality rate
     """
 
-    plt.figure()
+    fig = plt.figure()
 
     for r0 in R0:
-        sir = solve_SIR(I0, tf, r0, m)
+        sir = solve_SIR(I0, tint, r0, gamma, m)
 
         plt.plot(sir.t, sir.y[1], label=f"$R_0$  = {r0:.2f}")
 
@@ -160,19 +164,18 @@ def plot_infected(I0, tf, R0, m=None):
 
     tag = "simple" if m is None else "mortality"
     plt.savefig(f"plots/SIR_{tag}_R.pdf")
+    plt.close(fig)
 
 
 # Number of infected people in the UK (13/03/2020)
 i0 = 797
+tint = (0, 40)
 
 # No mortality
-plot_sir(I0=i0, tf=60, R0=2)
+plot_sir(I0=i0, tint=tint, R0=2, gamma=1)
 
 # 2.5% mortality
-plot_sir(I0=i0, tf=60, R0=2, m=0.025)
+plot_sir(I0=i0, tint=tint, R0=2, gamma=1, m=0.025)
 
 # No mortality
-plot_infected(I0=i0, tf=60, R0=[1.5, 2.0, 2.5, 3.0, 3.5])
-
-# 2.5% mortality
-plot_infected(I0=i0, tf=60, R0=[1.5, 2.0, 2.5, 3.0, 3.5], m=0.025)
+plot_infected(I0=i0, tint=tint, R0=[1.5, 2.0, 2.5, 3.0, 3.5], gamma=1)

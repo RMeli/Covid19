@@ -7,6 +7,8 @@ from matplotlib import pyplot as plt
 
 import os
 
+from SIR import plot_sir
+
 datapath = "../data/UK/"
 fname = "DailyConfirmedCases.xlsx"
 
@@ -51,6 +53,7 @@ print(f"γ = {popt[2]:.2f}")
 
 tt = np.linspace(t[0], t[-1], 1000)
 
+fig = plt.figure()
 plt.semilogy(t, y, "o")
 plt.semilogy(
     tt,
@@ -63,3 +66,6 @@ plt.xlabel("Time (Days)")
 plt.ylabel("Total Cases (UK)")
 
 plt.savefig("plots/SIR_fit.pdf")
+plt.close(fig)
+
+plot_sir(I0=popt[0], tint=(0, 100), R0=popt[1], gamma=popt[2], tag="fitted_UK")
