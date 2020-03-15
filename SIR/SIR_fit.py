@@ -68,5 +68,27 @@ plt.ylabel("Total Cases (UK)")
 plt.savefig("plots/SIR_fit.pdf")
 plt.close(fig)
 
-t, y = plot_sir(I0=popt[0], tint=(0, 100), R0=popt[1], gamma=popt[2], tag="fitted_UK")
-print(f"I_max = {max(y[1]):.3f}")
+t_sir, y_sir = plot_sir(
+    I0=popt[0], tint=(0, 100), R0=popt[1], gamma=popt[2], tag="fitted_UK"
+)
+
+t_max = t_sir[np.argmax(y_sir[1])]
+I_max = max(y_sir[1])
+print(f"I_max = {I_max:.3f}")
+
+# UK Population
+N = 67.5e6
+
+fig = plt.figure()
+
+plt.semilogy(t, y, "o")  # Data
+plt.semilogy(t_sir, y_sir[1] * N, label="SIR")  # Fit
+plt.plot(t_max, I_max * N, "o", label=f"I = {I_max * N / 1e6:.1f} M")  # Maximum
+
+plt.ylim([1, None])
+plt.legend()
+plt.xlabel("Time (Days)")
+plt.ylabel("Total Cases (UK)")
+
+plt.savefig("plots/SIR_fit_infected.pdf")
+plt.close(fig)
