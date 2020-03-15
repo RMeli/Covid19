@@ -7,10 +7,10 @@ import datetime
 import itertools
 import os
 
-datapath = "data/UK/"
+datapath = "../data/UK/"
 fname = "DailyConfirmedCases.xlsx"
 
-plotpath = "dataviz/plots"
+plotpath = "plots"
 
 dailycases = pd.read_excel(os.path.join(datapath, fname))
 
