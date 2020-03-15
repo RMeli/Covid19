@@ -133,6 +133,8 @@ def plot_sir(I0, tint, R0, gamma, m=None, tag=None):
     plt.savefig(f"plots/SIR_{tag}.pdf")
     plt.close(fig)
 
+    return sir.t, sir.y
+
 
 def plot_infected(I0, tint, R0, gamma, m=None):
     """
@@ -168,7 +170,7 @@ def plot_infected(I0, tint, R0, gamma, m=None):
 
 
 # Number of infected people in the UK (13/03/2020)
-i0 = 797
+i0 = 1
 tint = (0, 40)
 
 # No mortality

@@ -39,19 +39,19 @@ def I_exp(t, I0, R0, gamma):
     return I0 * np.exp((R0 - 1) * gamma * t)
 
 
+t = np.arange(0, len(dailycases["total"]))
+y = dailycases["total"]
+
 # From UK data, exponential growth starts 27 days after first cases
 t0 = 27
 
-t = np.arange(0, len(dailycases["total"]))[t0:]
-y = dailycases["total"][t0:]
-
-popt, _ = optimize.curve_fit(I_exp, t, y, p0=[13, 2.5, 1])
+popt, _ = optimize.curve_fit(I_exp, t[t0:], y[t0:], p0=[13, 2.5, 1])
 
 print(f"I0 = {popt[0]:.2f}")
 print(f"R0 = {popt[1]:.2f}")
 print(f"γ = {popt[2]:.2f}")
 
-tt = np.linspace(t[0], t[-1], 1000)
+tt = np.linspace(t0, t[-1], 1000)
 
 fig = plt.figure()
 plt.semilogy(t, y, "o")
@@ -68,4 +68,5 @@ plt.ylabel("Total Cases (UK)")
 plt.savefig("plots/SIR_fit.pdf")
 plt.close(fig)
 
-plot_sir(I0=popt[0], tint=(0, 100), R0=popt[1], gamma=popt[2], tag="fitted_UK")
+t, y = plot_sir(I0=popt[0], tint=(0, 100), R0=popt[1], gamma=popt[2], tag="fitted_UK")
+print(f"I_max = {max(y[1]):.3f}")
