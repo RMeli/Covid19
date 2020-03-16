@@ -6,22 +6,17 @@ from scipy import optimize
 from matplotlib import pyplot as plt
 
 import os
+import sys
 
 from SIR import plot_sir
 
-datapath = "../data/UK/"
-fname = "DailyConfirmedCases.xlsx"
+cdir = os.path.dirname(os.path.realpath(__file__))
+pdir = os.path.dirname(cdir)
+sys.path.append(pdir)
 
-plotpath = "dataviz/plots"
+from load import load_uk
 
-dailycases = pd.read_excel(os.path.join(datapath, fname)).drop(
-    columns=["DateVal", "CMODateCount"]
-)
-
-dailycases.rename(
-    columns={"CumCases": "total"}, inplace=True,
-)
-
+data, _ = load_uk()
 
 def I_exp(t, I0, R0, gamma):
     """
@@ -39,8 +34,8 @@ def I_exp(t, I0, R0, gamma):
     return I0 * np.exp((R0 - 1) * gamma * t)
 
 
-t = np.arange(0, len(dailycases["total"]))
-y = dailycases["total"]
+t = np.arange(0, len(data["total"]))
+y = data["total"]
 
 # From UK data, exponential growth starts 27 days after first cases
 t0 = 27
