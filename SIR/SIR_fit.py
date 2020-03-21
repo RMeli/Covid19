@@ -14,9 +14,12 @@ cdir = os.path.dirname(os.path.realpath(__file__))
 pdir = os.path.join(os.path.dirname(cdir), "data")
 sys.path.append(pdir)
 
-from load import load_uk
+from load import load_uk, load_ita
 
-data, _ = load_uk()
+
+population = {"ita": 60549600, "uk": 66435550}
+exponentialgrowth = {"ita": (3, 20), "uk": (27, None)}
+
 
 def I_exp(t, I0, R0, gamma):
     """
@@ -34,56 +37,63 @@ def I_exp(t, I0, R0, gamma):
     return I0 * np.exp((R0 - 1) * gamma * t)
 
 
-t = np.arange(0, len(data["total"]))
-y = data["total"]
+for loader in [load_uk, load_ita]:
 
-# From UK data, exponential growth starts 27 days after first cases
-t0 = 27
+    data, tag = loader()
 
-popt, _ = optimize.curve_fit(I_exp, t[t0:], y[t0:], p0=[13, 2.5, 1])
+    t = np.arange(0, len(data["total"]))
+    y = data["total"]
 
-print(f"I0 = {popt[0]:.2f}")
-print(f"R0 = {popt[1]:.2f}")
-print(f"γ = {popt[2]:.2f}")
+    ti, tf = exponentialgrowth[tag]
 
-tt = np.linspace(t0, t[-1], 1000)
+    if ti is None:
+        ti = 0
+    if tf is None:
+        tf = -1
 
-fig = plt.figure()
-plt.semilogy(t, y, "o")
-plt.semilogy(
-    tt,
-    I_exp(tt, popt[0], popt[1], popt[2]),
-    label=f"$R_0$ = {popt[1]:.2f}; $\\gamma$ = {popt[2]:.2f}",
-)
+    popt, _ = optimize.curve_fit(I_exp, t[ti:tf], y[ti:tf], p0=[13, 2.5, 1])
 
-plt.legend()
-plt.xlabel("Time (Days)")
-plt.ylabel("Total Cases (UK)")
+    print(f"I0 = {popt[0]:.2f}")
+    print(f"R0 = {popt[1]:.2f}")
+    print(f"γ = {popt[2]:.2f}")
 
-plt.savefig("plots/SIR_fit.pdf")
-plt.close(fig)
+    tt = np.linspace(t[ti], t[tf], 1000)
 
-t_sir, y_sir = plot_sir(
-    I0=popt[0], tint=(0, 100), R0=popt[1], gamma=popt[2], tag="fitted_UK"
-)
+    fig = plt.figure()
+    plt.semilogy(t, y, "o")
+    plt.semilogy(
+        tt,
+        I_exp(tt, popt[0], popt[1], popt[2]),
+        label=f"$R_0$ = {popt[1]:.2f}; $\\gamma$ = {popt[2]:.2f}",
+    )
 
-t_max = t_sir[np.argmax(y_sir[1])]
-I_max = max(y_sir[1])
-print(f"I_max = {I_max:.3f}")
+    plt.legend()
+    plt.xlabel("Time (Days)")
+    plt.ylabel(f"Total Cases ({tag.upper()})")
 
-# UK Population
-N = 67.5e6
+    plt.savefig(f"plots/SIR_fit_{tag}.pdf")
+    plt.close(fig)
 
-fig = plt.figure()
+    t_sir, y_sir = plot_sir(
+        I0=popt[0], tint=(0, 100), R0=popt[1], gamma=popt[2], tag=f"fitted"
+    )
 
-plt.semilogy(t, y, "o")  # Data
-plt.semilogy(t_sir, y_sir[1] * N, label="SIR")  # Fit
-plt.plot(t_max, I_max * N, "o", label=f"I = {I_max * N / 1e6:.1f} M")  # Maximum
+    t_max = t_sir[np.argmax(y_sir[1])]
+    I_max = max(y_sir[1])
+    print(f"I_max = {I_max:.3f}")
 
-plt.ylim([1, None])
-plt.legend()
-plt.xlabel("Time (Days)")
-plt.ylabel("Total Cases (UK)")
+    N = population[tag]
 
-plt.savefig("plots/SIR_fit_infected.pdf")
-plt.close(fig)
+    fig = plt.figure()
+
+    plt.semilogy(t, y, "o")  # Data
+    plt.semilogy(t_sir, y_sir[1] * N, label="SIR")  # Fit
+    plt.plot(t_max, I_max * N, "o", label=f"I = {I_max * N / 1e6:.1f} M")  # Maximum
+
+    plt.ylim([1, None])
+    plt.legend()
+    plt.xlabel("Time (Days)")
+    plt.ylabel(f"Total Cases ({tag.upper()})")
+
+    plt.savefig(f"plots/SIR_fit_infected_{tag}.pdf")
+    plt.close(fig)
