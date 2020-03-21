@@ -2,7 +2,7 @@ import pandas as pd
 
 import os
 
-datadir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data")
+datadir = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load_ita(describe=False):
