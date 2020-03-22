@@ -27,11 +27,7 @@ def plotdailycases(daya, yname, tag, log=False, xskyp=2):
 
     plt.tight_layout()
     plt.savefig(
-        os.path.join(
-            "plots",
-            f"{yname}_cases_{tag}"
-            f"{'_log' if log else ''}.pdf",
-        )
+        os.path.join("plots", f"{yname}_cases_{tag}" f"{'_log' if log else ''}.pdf",)
     )
 
 

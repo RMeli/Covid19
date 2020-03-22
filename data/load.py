@@ -1,4 +1,5 @@
 import pandas as pd
+import geopandas as gpd
 
 import os
 
@@ -11,29 +12,18 @@ def load_ita(describe=False):
 
     data = pd.read_csv(os.path.join(datadir, "Italy", fname))
 
+    mapcols = {
+        "data": "date",
+        "nuovi_attualmente_positivi": "new",
+        "totale_casi": "total",
+        "tamponi": "tested",
+    }
+
     data.rename(
-        columns={
-            "data": "date",
-            "nuovi_attualmente_positivi": "new",
-            "totale_casi": "total",
-            "tamponi": "tested",
-        },
-        inplace=True,
+        columns=mapcols, inplace=True,
     )
 
-    data.drop(
-        columns=[
-            "stato",
-            "ricoverati_con_sintomi",
-            "terapia_intensiva",
-            "totale_ospedalizzati",
-            "isolamento_domiciliare",
-            "totale_attualmente_positivi",
-            "dimessi_guariti",
-            "deceduti",
-        ],
-        inplace=True,
-    )
+    data = data[mapcols.values()]
 
     # Transform column to date
     data["date"] = data["date"].apply(pd.to_datetime).dt.date
@@ -44,16 +34,56 @@ def load_ita(describe=False):
     return data, "ita"
 
 
+def load_ita_geo():
+
+    geoname = "limits_IT_regions.geojson"
+    dataname = "dpc-covid19-ita-regioni-latest.csv"
+
+    # Load regions
+    regions = gpd.read_file(os.path.join(datadir, "Italy", geoname))
+
+    regions_mapcols = {"reg_name": "name", "reg_istat_code_num": "id"}
+
+    # Rename columns and keep renamed colums
+    # Keep geometry column as well
+    regions.rename(columns=regions_mapcols, inplace=True)
+    regions = regions[list(regions_mapcols.values()) + ["geometry"]]
+
+    # Load data
+    cases = pd.read_csv(os.path.join(datadir, "Italy", dataname))
+
+    cases_mapcols = {
+        "codice_regione": "id",
+        "denominazione_regione": "name",
+        "totale_casi": "total",
+    }
+
+    cases.rename(
+        columns=cases_mapcols, inplace=True,
+    )
+    cases = cases[cases_mapcols.values()]
+
+    # Put together regions
+    cases = cases.groupby("id").sum()
+
+    df = regions.merge(cases, on="id")
+
+    return df, "ita"
+
+
 def load_uk(describe=False):
 
     fname = "DailyConfirmedCases.xlsx"
 
     data = pd.read_excel(os.path.join(datadir, "UK", fname))
 
+    mapcols = {"DateVal": "date", "CMODateCount": "new", "CumCases": "total"}
+
     data.rename(
-        columns={"DateVal": "date", "CMODateCount": "new", "CumCases": "total"},
-        inplace=True,
+        columns=mapcols, inplace=True,
     )
+
+    data = data[mapcols.values()]
 
     data["date"] = data["date"].apply(pd.to_datetime).dt.date
 
