@@ -14,7 +14,7 @@ def load_ita(describe=False):
 
     mapcols = {
         "data": "date",
-        "nuovi_attualmente_positivi": "new",
+        "nuovi_positivi": "new",
         "totale_casi": "total",
         "tamponi": "tested",
     }
