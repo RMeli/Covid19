@@ -12,7 +12,7 @@ sys.path.append(pdir)
 from load import load_uk, load_ita
 
 
-def plotdailycases(daya, yname, tag, log=False, xskyp=2):
+def plotdailycases(daya, yname, tag, log=False, xskyp=5):
     plt.figure()
 
     sns.barplot(
