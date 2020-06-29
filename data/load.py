@@ -73,11 +73,11 @@ def load_ita_geo():
 
 def load_uk(describe=False):
 
-    fname = "DailyConfirmedCases.xlsx"
+    fname = "cases.csv"
 
-    data = pd.read_excel(os.path.join(datadir, "UK", fname))
+    data = pd.read_csv(os.path.join(datadir, "UK", fname))
 
-    mapcols = {"DateVal": "date", "CMODateCount": "new", "CumCases": "total"}
+    mapcols = {"Specimen date": "date", "Daily lab-confirmed cases": "new", "Cumulative lab-confirmed cases": "total"}
 
     data.rename(
         columns=mapcols, inplace=True,
@@ -86,6 +86,10 @@ def load_uk(describe=False):
     data = data[mapcols.values()]
 
     data["date"] = data["date"].apply(pd.to_datetime).dt.date
+
+    data = data.groupby(data["date"], as_index=False).sum()
+
+    print(data)
 
     if describe:
         print(data.describe())
