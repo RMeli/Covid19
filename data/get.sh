@@ -4,3 +4,6 @@ wget https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-
 
 # Italy (GEO)
 wget https://raw.githubusercontent.com/openpolis/geojson-italy/master/geojson/limits_IT_regions.geojson -O Italy/limits_IT_regions.geojson
+
+# UK
+wget https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv -O UK/cases.csv
